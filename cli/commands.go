@@ -8,7 +8,7 @@ type command struct {
 	Run  func() tea.Cmd
 }
 
-var commandFocusOn = command{
+var focusOn = command{
 	Name: "focus on",
 	Desc: "Enable focus window",
 	Run: func() tea.Cmd {
@@ -16,7 +16,7 @@ var commandFocusOn = command{
 	},
 }
 
-var commandFocusOff = command{
+var focusOff = command{
 	Name: "focus off",
 	Desc: "Disable focus window",
 	Run: func() tea.Cmd {
@@ -24,4 +24,10 @@ var commandFocusOff = command{
 	},
 }
 
-
+var configureBlocklist = command{
+	Name: "blocklist",
+	Desc: "Configure blocklist",
+	Run: func() tea.Cmd{
+		return nil
+	},
+}
