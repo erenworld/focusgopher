@@ -36,14 +36,14 @@ func (m model) Init() tea.Cmd {
 
 // loadInitialConfig initializes the hosts manager and reports success or error.
 func (m model) loadInitialConfig() tea.Msg {
-	if err := m.hostsManager.Init(); err != nil {
-		return initResult{err: err}
+	initErr := m.hostsManager.Init()
+	return initResult{
+		err: initErr,
 	}
-	return initResult{}
 }
 
 // Update applies messages (events) to the model and returns the next command.
-//initResult: marks initialization complete or records a fatal error
+// initResult: marks initialization complete or records a fatal error
 // tea.KeyMsg: handles keypresses (navigation, selection, quit)
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {

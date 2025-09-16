@@ -32,34 +32,26 @@ func (m model) View() string {
 	s := appNameStyle.Render("focusgopher") + faint.Render(" - Reclaim your time.") + "\n\n"
 
 	if !m.initialised {
-		s += "Loading current configuration...\n\n"
+		return s + faint.Render("Loading current configuration...\n")
 	}
 
 	if m.fatalErr != nil {
-		bar := lipgloss.JoinHorizontal(lipgloss.Top,
-			statusStyle.Render("ERROR"),
-			statusText.Render(m.fatalErr.Error()),
-		)
-
-		s += bar + "\n\n"
+		return s + faint.Render("Error: " + m.fatalErr.Error() + "\n")
 	}
 
-	if m.initialised && m.fatalErr == nil {
-		l := list.New().Enumerator(func(items list.Items, i int) string {
-			if i == m.commandsListSelection {
-				return "→"
-			}
-			return ""
-		}).
-			EnumeratorStyle(listEnumeratorStyle).
-			ItemStyle(listItemStyle)
-		for _, c := range m.commands {
-			l.Item(c.Name + faint.Render(" - "+c.Desc))
+	l := list.New().Enumerator(func(items list.Items, i int) string {
+		if i == m.commandsListSelection {
+			return "→"
 		}
-		s += l.String() + "\n\n"
+		return ""
+	}).
+		EnumeratorStyle(listEnumeratorStyle).
+		ItemStyle(listItemStyle)
+	
+	for _, c := range m.commands {
+		l.Item(c.Name + faint.Render(" - "+c.Desc))
 	}
-
-	s += "press q to quit\n"
+	s += l.String() + "\n\n"
 
 	return s
 }
