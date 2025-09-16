@@ -1,4 +1,4 @@
-package focusgopher
+package main
 
 import (
 	"fmt"
