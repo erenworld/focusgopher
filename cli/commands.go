@@ -10,8 +10,8 @@ type command struct {
 	Run  func() tea.Cmd
 }
 
-// focusOn enables the focus window (blocks distractions).
-var focusOn = command{
+// commandFocusOn enables the focus window (blocks distractions).
+var commandFocusOn = command{
 	Name: "focus on",
 	Desc: "Enable focus window",
 	Run: func() tea.Cmd {
@@ -19,8 +19,8 @@ var focusOn = command{
 	},
 }
 
-// focusOff disables the focus window (unblocks distractions).
-var focusOff = command{
+// commandFocusOff disables the focus window (unblocks distractions).
+var commandFocusOff = command{
 	Name: "focus off",
 	Desc: "Disable focus window",
 	Run: func() tea.Cmd {
@@ -28,8 +28,8 @@ var focusOff = command{
 	},
 }
 
-// configureBlocklist allows editing of the blocked domains list.
-var configureBlocklist = command{
+// commandConfigureBlocklist allows editing of the blocked domains list.
+var commandConfigureBlocklist = command{
 	Name: "blocklist",
 	Desc: "Configure blocklist",
 	Run: func() tea.Cmd{
