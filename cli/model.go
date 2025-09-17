@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"github.com/charmbracelet/bubbles/textarea"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/erenworld/focusgopher/hosts"
 )
@@ -14,6 +15,9 @@ type model struct {
 	initialised             bool
 	fatalErr                error
 	domains                 []string	
+	isEditingDomains		bool
+	status					hosts.FocusStatus
+	textarea				textarea.Model
 }
 
 // initResult carries the outcome of loading initial configuration.
@@ -25,7 +29,7 @@ type initResult struct {
 func NewModel() model {
 	return model{
 		hostsManager: &hosts.Manager{},
-		commands:     []command{focusOn, focusOff, configureBlocklist},
+		commands:     []command{},
 	}
 }
 
@@ -37,6 +41,7 @@ func (m model) Init() tea.Cmd {
 // loadInitialConfig initializes the hosts manager and reports success or error.
 func (m model) loadInitialConfig() tea.Msg {
 	initErr := m.hostsManager.Init()
+
 	return initResult{
 		err: initErr,
 	}
@@ -49,13 +54,32 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case initResult:
 		m.initialised = true
+	
 		if msg.err != nil {
 			m.fatalErr = msg.err
 			return m, tea.Quit
 		}
 
+		m.domains = m.hostsManager.Domains
+		m.status = m.hostsManager.Status
+
+		if m.status == hosts.FocusStatusOn {
+			m.commands = []command{commandFocusOff, commandConfigureBlocklist}
+		} else {
+			m.commands = []command{commandFocusOn, commandConfigureBlocklist}
+		}
+		if len (m.domains) == 0 {
+			ti := textarea.New()
+			ti.Placeholder = "Once upon a time..."
+			ti.Focus()
+			m.textarea = ti
+			m.isEditingDomains = true
+			return m, textarea.Blink
+		}
+
 	case tea.KeyMsg:
 		switch msg.String() {
+		
 		case "up", "k":
 			if m.commandsListSelection > 0 {
 				m.commandsListSelection--
