@@ -15,3 +15,15 @@ focusgopher needs sudo to modify `/etc/hosts` file. It won't affect your existin
 ```bash 
 sudo focusgopher
 ```
+
+## Supported platforms
+
+* macOS
+* Linux
+* Windows
+
+## Run tests
+
+```bash
+go test -v -race ./...
+```
