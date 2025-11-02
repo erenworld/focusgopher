@@ -5,7 +5,7 @@ import (
 	"os"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/erenworld/focusgopher/cli"
+	"focusgopher/cli"
 )
 
 func main() {
