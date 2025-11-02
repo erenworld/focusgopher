@@ -3,9 +3,9 @@ package main
 import (
 	"fmt"
 	"os"
-	
-	"github.com/erenworld/focusgopher/cli"
+
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/erenworld/internal/cli"
 )
 
 func main() {
