@@ -21,7 +21,7 @@ type initResult struct {
 
 func NewModel() model {
 	return model{
-		hostsManager: &hosts.Manager,
+		hostsManager: &hosts.Manager{},
 		commands: []command{CommandFocusOn, CommandFocusOff, ConfigureBlacklist},
 	}
 }
