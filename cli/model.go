@@ -1,8 +1,9 @@
 package cli
 
 import (
-	tea "github.com/charmbracelet/bubbletea"
 	"focusgopher/hosts"
+
+	tea "github.com/charmbracelet/bubbletea"
 )
 
 type model struct {
@@ -31,15 +32,13 @@ func (m model) Init() tea.Cmd {
 }
 
 func (m model) loadInitialConfig() tea.Msg {
-	if err := m.hostsManager.Init(); err != nil {
-		return initResult{
-			err: err,
-		}
+	initErr := m.hostsManager.Init()	
+	return initResult{
+		err: initErr,
 	}
-
-	return initResult{}
 }
 
+// Update model
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case initResult:
