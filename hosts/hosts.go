@@ -1,10 +1,29 @@
 package hosts
 
-import "os"
+import (
+	"os"
+	"bufio"
+	"io"
+	"slices"
+	"strings"
+) 
 
+type FocusStatus string
 type Manager struct {
-	hostsFile *os.File
+	hostsFile 	*os.File
+	Status 		FocusStatus
+	Domains 	[]string
 }
+
+const (
+	ipAddress 				   = "127.0.0.1"
+	FocusStatusOn FocusStatus  = "on"
+	FocusStatusOff FocusStatus = "off"
+	CommentStart			   = "#focusgopher:start"
+	CommentEnd			  	   = "#focusgopher:end"
+	CommentStatusOn			   = "#focusgopher:on"
+	CommentStatusOff		   = "#focusgopher:off"
+)
 
 func (h *Manager) Init() error {
 	var err error
