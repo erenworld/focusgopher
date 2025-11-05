@@ -51,11 +51,12 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		}
 
-		if m.status == hosts.StatusFocusOn {
+		if m.status == hosts.FocusStatusOn {
 			m.commands = []command{CommandFocusOff, ConfigureBlacklist}
 		} else {
 			m.commands = []command{CommandFocusOn, ConfigureBlacklist}
 		}
+		
 		if len(m.domains) == 0 {
 			// todos: return edit
 		}
