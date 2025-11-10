@@ -1,20 +1,29 @@
 package cli
 
 import (
+	"strings"
+
 	"focusgopher/hosts"
 
+	"github.com/charmbracelet/bubbles/textarea"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
+type sessionState uint
+
+const (
+	menuView sessionState = iota
+	blacklistView
+)
+
 type model struct {
-	hostsManager		 *hosts.Manager
 	commands			 []command
 	commandListSelection int
-	currentCommand	     *command
-	initialised			 bool
 	fatalErr			 error
 	domains				 []string
 	status				 hosts.FocusStatus
+	textarea			 textarea.Model
+	state				 sessionState
 }
 
 type initResult struct {
@@ -22,9 +31,25 @@ type initResult struct {
 }
 
 func NewModel() model {
+	domains, status, err := hosts.ExtractDomainsFromHosts()
+
+	state := menuView
+	text := textarea.New()
+	if len(domains) == 0 {
+		state = blacklistView
+		text.SetValue(strings.Join(hosts.DefaultDomains, "\n"))
+		text.Focus()
+		text.CursorEnd()
+	} else {
+		text.Blur()
+	}
+
 	return model{
-		hostsManager: &hosts.Manager{},
-		commands: []command{},
+		textarea: 	text,
+		domains: 	domains,
+		state:		state,
+		status:		status,
+		fatalErr:   err,
 	}
 }
 
@@ -33,55 +58,67 @@ func (m model) Init() tea.Cmd {
 }
 
 func (m model) loadInitialConfig() tea.Msg {
-	initErr := m.hostsManager.Init()	
-
-	return initResult{
-		err: initErr,
+	if m.fatalErr != nil {
+		return tea.Quit()
 	}
+
+	return nil
+}
+
+func (m *model) getCommandsList() []command {
+	if m.status == hosts.FocusStatusOn {
+		return []command{CommandFocusOff, CommandConfigureBlacklist}
+	}
+
+	return []command{CommandFocusOn, CommandConfigureBlacklist}
 }
 
 // Update model
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	var cmds []tea.Cmd
+	var cmd tea.Cmd
+
+	m.textarea, cmd = m.textarea.Update(msg)
+	cmds = append(cmds, cmd)
+	
 	switch msg := msg.(type) {
-	case initResult:
-		m.initialised = true
-
-		if msg.err != nil {
-			m.fatalErr = msg.err
-			return m, tea.Quit
-		}
-
-		if m.status == hosts.FocusStatusOn {
-			m.commands = []command{CommandFocusOff, ConfigureBlacklist}
-		} else {
-			m.commands = []command{CommandFocusOn, ConfigureBlacklist}
-		}
 		
-		if len(m.domains) == 0 {
-			// todos: return edit
-			
-		}
-
-		m.domains = m.hostsManager.Domains
-		m.status = m.hostsManager.Status
-
-
 	case tea.KeyMsg:
+		commands := m.getCommandsList()
 		switch msg.String() {
-		case "up":
-			if m.commandListSelection > 0 {
+		case "up", "k":
+			if m.state == menuView && m.commandListSelection > 0 {
 				m.commandListSelection--
 			}
-		case "down":
-			if m.commandListSelection < len(m.commands) - 1 {
+		case "down", "j":
+			if m.state == menuView && m.commandListSelection < len(commands)-1 {
 				m.commandListSelection++
 			}
 		case "enter", " ":
-			m.currentCommand = &m.commands[m.commandListSelection]
-			return m, m.currentCommand.RunFunc()
+			if m.state == menuView {
+				m = commands[m.commandListSelection].RunFunc(m)
+				if m.fatalErr != nil {
+					return m, tea.Quit
+				}
+			}
 		case "ctrl+c", "q":
 			return m, tea.Quit
+		case "esc":
+			if m.state == blacklistView {
+				domains := strings.Split(m.textarea.Value() + "\n")
+				domains = hosts.CleanDomainsList(domains)
+
+				if err := hosts.WriteDomainsToHostsFile(domains, m.status); err != nil {
+					m.fatalErr = err 
+					return m, tea.Quit
+				}
+
+				m.domains = domains
+				m.state = menuView
+				m.textarea.Blur()
+			}
 		}
 	}
-	return m, nil
+	
+	return m, tea.Batch(cmds...)
 }

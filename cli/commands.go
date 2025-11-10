@@ -1,27 +1,54 @@
 package cli
 
-import tea "github.com/charmbracelet/bubbletea"
+import (
+	"strings"
+
+	"focusgopher/hosts"
+) 
 
 type command struct {
 	CommandName string
 	Description string
-	RunFunc     func() tea.Cmd
+	RunFunc     func(m model) model
 }
 
 var CommandFocusOn =  command{
 	CommandName: "focus on",
 	Description: "Start focus window.",
-	RunFunc: func() tea.Cmd { return nil },
+	RunFunc: func(m model) model {
+		if err := hosts.WriteDomainsToHostsFile(m.domains, hosts.FocusStatusOn);
+		err != nil {
+			m.fatalErr = err 
+			return m
+		}
+		m.status = hosts.FocusStatusOn
+		return m
+	},
 }
 
 var CommandFocusOff =  command{
 	CommandName: "focus off",
 	Description: "Stop focus window.",
-	RunFunc: func() tea.Cmd { return nil },
+	RunFunc: func(m model) model {
+		if err := hosts.WriteDomainsToHostsFile(m.domains, hosts.FocusStatusOff);
+		err != nil {
+			m.fatalErr = err 
+			return m 
+		}
+		m.status = hosts.FocusStatusOff
+		return m
+	},
 }
 
-var ConfigureBlacklist =  command{
+var CommandConfigureBlacklist =  command{
 	CommandName: "blacklist",
 	Description: "Configure blacklist.",
-	RunFunc: func() tea.Cmd { return nil },
+	RunFunc: func(m model) model {
+		m.commandListSelection = 0
+		m.state = blacklistView
+		m.textarea.setValue(strings.Join(m.domains, "\n"))
+		m.textarea.Focus()
+		m.textarea.CursorEnd()
+		return m
+	},
 }
