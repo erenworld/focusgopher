@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 
-	tea "github.com/charmbracelet/bubbletea"
 	"focusgopher/cli"
+	tea "github.com/charmbracelet/bubbletea"
 )
 
 func main() {
