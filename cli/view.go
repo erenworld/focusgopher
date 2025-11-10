@@ -6,34 +6,35 @@ import (
 )
 
 var appHeaderStyle = lipgloss.NewStyle().
-	Foreground(lipgloss.Color("#00C2FF")).
+	Foreground(lipgloss.Color("#F9A825")). 
 	Bold(true)
-	
-// var statusBarStyle = lipgloss.NewStyle().
-// 	Foreground(lipgloss.AdaptiveColor{Light: "#343433", Dark: "#C1C6B2"}).
-// 	Background(lipgloss.AdaptiveColor{Light: "#C8F7FF", Dark: "#1E1E1E"})
 
 var statusStyle = lipgloss.NewStyle().
-	Foreground(lipgloss.Color("#FFFDF5")).
-	Background(lipgloss.Color("#009933")).
+	Foreground(lipgloss.Color("#FFF8E1")).
+	Background(lipgloss.Color("#33691E")). 
 	Padding(0, 1)
 
-// var statusText = lipgloss.NewStyle().Inherit(statusBarStyle).Padding(0, 1)
-
 var errorAlertStyle = lipgloss.NewStyle().
-Foreground(lipgloss.Color("#FFFDF5")).
-Background(lipgloss.Color("#FF5F87")).
-Padding(1, 0)
+	Foreground(lipgloss.Color("#FFFE1")). 
+	Background(lipgloss.Color("#B71C1C")).
+	Padding(1, 0)
 
 var errorInfoStyle = lipgloss.NewStyle().
-Foreground(lipgloss.Color("250")).
-Padding(0, 1)
+	Foreground(lipgloss.Color("#D7CCC8")). 
+	Padding(0, 1)
 
+var listStyle = lipgloss.NewStyle().
+	Foreground(lipgloss.Color("#4DB6AC")). 
+	MarginRight(1)
 
-var listStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("81")).MarginRight(1)
-var listItemStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("117")).MarginRight(1)
+var listItemStyle = lipgloss.NewStyle().
+	Foreground(lipgloss.Color("#81D4FA")). 
+	MarginRight(1)
 
-var faint = lipgloss.NewStyle().Foreground(lipgloss.Color("250")).Faint(true)
+var faint = lipgloss.NewStyle().
+	Foreground(lipgloss.Color("#A1887F")). 
+	Faint(true)
+
 
 // View model
 func (m model) View() string {

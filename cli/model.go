@@ -15,7 +15,6 @@ const (
 	menuView sessionState = iota
 	blacklistView
 )
-
 type model struct {
 	commands			 []command
 	commandListSelection int
@@ -24,10 +23,6 @@ type model struct {
 	status				 hosts.FocusStatus
 	textarea			 textarea.Model
 	state				 sessionState
-}
-
-type initResult struct {
-	err error
 }
 
 func NewModel() model {
