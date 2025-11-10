@@ -13,11 +13,10 @@ var appHeaderStyle = lipgloss.NewStyle().
 // 	Foreground(lipgloss.AdaptiveColor{Light: "#343433", Dark: "#C1C6B2"}).
 // 	Background(lipgloss.AdaptiveColor{Light: "#C8F7FF", Dark: "#1E1E1E"})
 
-// var statusStyle = lipgloss.NewStyle().
-// 	Inherit(statusBarStyle).
-// 	Foreground(lipgloss.Color("#FFFDF5")).
-// 	Background(lipgloss.Color("#FF5F87")).
-// 	Padding(1, 0)
+var statusStyle = lipgloss.NewStyle().
+	Foreground(lipgloss.Color("#FFFDF5")).
+	Background(lipgloss.Color("#009933")).
+	Padding(0, 1)
 
 // var statusText = lipgloss.NewStyle().Inherit(statusBarStyle).Padding(0, 1)
 
@@ -38,31 +37,36 @@ var faint = lipgloss.NewStyle().Foreground(lipgloss.Color("250")).Faint(true)
 
 // View model
 func (m model) View() string {
-	style := appHeaderStyle.Render("focusgopher") + faint.Render(" - block distractions") + "\n\n"
-
-	if !m.initialised {
-		style += "..." + "\n"
-		return style
-	}
-
 	if m.fatalErr != nil {
-		style += errorAlertStyle.Render("ERROR") + errorInfoStyle.Render(m.fatalErr.Error()+"\n")
+		return errorAlertStyle.Render("ERROR") + errorInfoStyle.Render(m.fatalErr.Error()) + "\n"
 	}
 
-	l := list.New().Enumerator(func(items list.Items, i int) string {
-		if i == m.commandListSelection {
-			return "→"
+	style := appHeaderStyle.Render("focusgopher") + faint.Render(" - block distractions") + "\n\n"
+	style += statusStyle.Render("STATUS") + errorInfoStyle.Render(string(m.status)) + "\n\n"
+
+	if m.state == blacklistView {
+		style += "Edit/add domains:\n\n" + m.textarea.View() + "\n\n"
+		style += "press Esc to save.\n"
+	}
+
+	if m.state == menuView {
+		commands := m.getCommandsList()
+
+		l := list.New().Enumerator(func(items list.Items, i int) string {
+			if i == m.commandListSelection {
+				return "→"
+			}
+			return " "
+		}).
+		EnumeratorStyle(listStyle).
+		ItemStyle(listItemStyle)
+		
+		for _, c := range commands {
+			l.Item(c.CommandName + faint.Render(" - "+c.Description))
 		}
-		return " "
-	}).
-	EnumeratorStyle(listStyle).
-	ItemStyle(listItemStyle)
 	
-	for _, c := range m.commands {
-		l.Item(c.CommandName + faint.Render(" - "+c.Description))
+		style += l.String() + "\n\n"
 	}
-
-	style += l.String() + "\n\n"
 
 	return style
 }

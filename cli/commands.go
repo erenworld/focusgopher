@@ -16,7 +16,7 @@ var CommandFocusOn =  command{
 	CommandName: "focus on",
 	Description: "Start focus window.",
 	RunFunc: func(m model) model {
-		if err := hosts.WriteDomainsToHostsFile(m.domains, hosts.FocusStatusOn);
+		if err := hosts.WriteDomainsToHosts(m.domains, hosts.FocusStatusOn);
 		err != nil {
 			m.fatalErr = err 
 			return m
@@ -30,7 +30,7 @@ var CommandFocusOff =  command{
 	CommandName: "focus off",
 	Description: "Stop focus window.",
 	RunFunc: func(m model) model {
-		if err := hosts.WriteDomainsToHostsFile(m.domains, hosts.FocusStatusOff);
+		if err := hosts.WriteDomainsToHosts(m.domains, hosts.FocusStatusOff);
 		err != nil {
 			m.fatalErr = err 
 			return m 
@@ -46,7 +46,7 @@ var CommandConfigureBlacklist =  command{
 	RunFunc: func(m model) model {
 		m.commandListSelection = 0
 		m.state = blacklistView
-		m.textarea.setValue(strings.Join(m.domains, "\n"))
+		m.textarea.SetValue(strings.Join(m.domains, "\n"))
 		m.textarea.Focus()
 		m.textarea.CursorEnd()
 		return m

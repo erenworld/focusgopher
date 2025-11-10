@@ -9,14 +9,9 @@ import (
 ) 
 
 type FocusStatus string
-type Manager struct {
-	hostsFile 		*os.File
-	Status 			FocusStatus
-	Domains 		[]string
-}
 
 const (
-	ipAddress 				   = "127.0.0.1"
+	defaultIpAddress		   = "127.0.0.1"
 	FocusStatusOn  FocusStatus = "on"
 	FocusStatusOff FocusStatus = "off"
 	CommentStart			   = "#focusgopher:start"
@@ -25,13 +20,52 @@ const (
 	CommentStatusOff		   = "#focusgopher:off"
 )
 
-func (h *Manager) Init() error {
-	// var err error
-	// h.hostsFile, err = os.OpenFile("/etc/hosts", os.O_RDWR, 0600)
-	h.Status = FocusStatusOff
+var DefaultDomains = []string{"facebook.com", "instagram.com", "tiktok.com", "twitter.com", "youtube.com", "netflix.com"}
+
+
+
+func ExtractDomainsFromHosts() ([]string, FocusStatus, error) {
+	domains := []string{}
+	status := FocusStatusOff
+
 	f, err := os.OpenFile(hostsPath, os.O_CREATE|os.O_RDWR, 0600)
 	if err != nil {
-		return err
+		return domains, status, err
+	}
+
+	defer f.Close()
+
+	data, err := io.ReadAll(f)
+	if err != nil {
+		return domains, status, err
+	}
+
+	var extractErr error
+	domains, status, extractErr = ExtractDomainsFromData(string(data))
+	if extractErr != nil {
+		return domains, status, extractErr
+	}
+
+	return domains, status, nil 
+}
+
+func CleanDomainsList(domains []string) []string {
+	uniqueDomains := []string{}
+
+	for _, domain := range domains {
+		domain = strings.TrimSpace(strings.ToLower(domain))
+		if domain != "" && !slices.Contains(uniqueDomains, domain) {
+			uniqueDomains = append(uniqueDomains, domain)
+		}
+	}
+	
+	return uniqueDomains
+}
+
+func WriteDomainsToHosts(domains []string, status FocusStatus) error {
+	f, err := os.OpenFile(hostsPath, os.O_CREATE|os.O_RDWR, 0600)
+	if err != nil {
+		return err 
 	}
 
 	defer f.Close()
@@ -41,52 +75,54 @@ func (h *Manager) Init() error {
 		return err
 	}
 
-	var extractErr error
-	h.Domains, h.Status, extractErr = h.ExtractDomains(string(data))
-	if extractErr != nil {
-		return extractErr
+	newData, updateErr := updateHostsData(string(data), domains, status)
+	if updateErr != nil {
+		return updateErr
+	}
+
+	if _, err := f.Seek(0, 0); err != nil {
+		return err
+	}
+
+	if _, err := f.WriteString(newData); err != nil {
+		return err
+	}
+
+	if err := f.Truncate(int64(len(newData))); err != nil {
+		return err
 	}
 
 	return nil
 }
 
-func (h *Manager) Close() error {
-	if h.hostsFile != nil {
-		return h.hostsFile.Close()
-	}
-
-	return nil
-}
-
-func (h *Manager) ExtractDomains(data string) ([]string, FocusStatus, error) {
+func ExtractDomainsFromData(data string) ([]string, FocusStatus, error) {
 	domains := []string{}
 	inComment := false
 	status := FocusStatusOff
 
 	scanner := bufio.NewScanner(strings.NewReader(data))
 	for scanner.Scan() {
-		line := scanner.Text()
-		trimLine := strings.TrimSpace(line)
-		if trimLine == CommentStart {
+		line := strings.ToLower(strings.TrimSpace(scanner.Text()))
+		if line == CommentStart {
 			inComment = true
-			continue
-		} else if trimLine == CommentEnd {
+			continue 
+		} else if line == CommentEnd {
 			inComment = false
 			break
 		}
 
 		if inComment {
-			if trimLine == CommentStatusOn {
+			if line == CommentStatusOn {
 				status = FocusStatusOn
 				continue
 			}
-			if trimLine == CommentStatusOff {
+			if line == CommentStatusOff {
 				status = FocusStatusOff
 				continue
 			}
 
-			uncommentedLine := strings.Replace(trimLine, "#", "", 1)
-			fields := strings.Fields(uncommentedLine) 
+			uncommentedLine := strings.Replace(line, "#", "", 1)
+			fields := strings.Fields(uncommentedLine)
 			if len(fields) > 1 {
 				if !slices.Contains(domains, fields[1]) {
 					domains = append(domains, fields[1])
@@ -99,5 +135,49 @@ func (h *Manager) ExtractDomains(data string) ([]string, FocusStatus, error) {
 		return domains, status, err
 	}
 
-	return domains, status, nil
+	return  domains, status, nil
+}
+
+func updateHostsData(originalData string, domains []string, status FocusStatus) (string, error) {
+	inComment := false
+	newData := ""
+	scanner := bufio.NewScanner(strings.NewReader(originalData))
+
+	for scanner.Scan() {
+		line := strings.ToLower(strings.TrimSpace(scanner.Text()))
+		if line == CommentStart {
+			inComment = true
+			continue
+		} else if line == CommentEnd {
+			inComment = false
+			continue
+		}
+
+		if !inComment {
+			newData += line + "\n"
+		}
+	}
+
+	if err := scanner.Err(); err != nil {
+		return originalData, err
+	}
+
+	newData += CommentStart + "\n"
+	if status == FocusStatusOn {
+		newData += CommentStatusOn + "\n"
+	} else {
+		newData += CommentStatusOff + "\n"
+	}
+
+	for _, d := range domains {
+		if status == FocusStatusOn {
+			newData += defaultIpAddress + " " + d + "\n"
+		} else {
+			newData += "#" + defaultIpAddress + " " + d + "\n"
+		}
+	}
+
+	newData += CommentEnd + "\n"
+
+	return newData, nil 
 }

@@ -105,10 +105,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		case "esc":
 			if m.state == blacklistView {
-				domains := strings.Split(m.textarea.Value() + "\n")
+				domains := strings.Split(m.textarea.Value(), "\n")
 				domains = hosts.CleanDomainsList(domains)
 
-				if err := hosts.WriteDomainsToHostsFile(domains, m.status); err != nil {
+				if err := hosts.WriteDomainsToHosts(domains, m.status); err != nil {
 					m.fatalErr = err 
 					return m, tea.Quit
 				}
