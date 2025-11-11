@@ -53,7 +53,7 @@ func (m model) loadInitialConfig() tea.Msg {
 		return tea.Quit()
 	}
 
-	return nil
+	return textarea.Blink
 }
 
 func (m *model) getCommandsList() []command {
@@ -104,6 +104,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					return m, tea.Quit
 				}
 
+				m.commandListSelection = 0
 				m.domains = domains
 				m.state = menuView
 				m.textarea.Blur()
