@@ -20,10 +20,6 @@ const (
 	CommentStatusOff		   = "#focusgopher:off"
 )
 
-var DefaultDomains = []string{"facebook.com", "instagram.com", "tiktok.com", "twitter.com", "youtube.com", "netflix.com"}
-
-
-
 func ExtractDomainsFromHosts() ([]string, FocusStatus, error) {
 	domains := []string{}
 	status := FocusStatusOff

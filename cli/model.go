@@ -30,13 +30,9 @@ func NewModel() model {
 
 	state := menuView
 	text := textarea.New()
+	text.Blur()
 	if len(domains) == 0 {
-		state = blacklistView
-		text.SetValue(strings.Join(hosts.DefaultDomains, "\n"))
-		text.Focus()
-		text.CursorEnd()
-	} else {
-		text.Blur()
+		domains = hosts.DefaultDomains
 	}
 
 	return model{
