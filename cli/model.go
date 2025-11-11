@@ -16,7 +16,6 @@ const (
 	blacklistView
 )
 type model struct {
-	commands			 []command
 	commandListSelection int
 	fatalErr			 error
 	domains				 []string
